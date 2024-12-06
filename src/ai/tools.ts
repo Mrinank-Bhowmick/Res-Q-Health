@@ -12,6 +12,17 @@ export const weatherTool = createTool({
   },
 });
 
+export const stockTool = createTool({
+  description: "Get price for a stock",
+  parameters: z.object({
+    symbol: z.string(),
+  }),
+  execute: async function ({ symbol }) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    return { symbol, price: 100 };
+  },
+});
+
 export const tools = {
   displayWeather: weatherTool,
 };
