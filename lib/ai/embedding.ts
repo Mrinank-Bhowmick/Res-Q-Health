@@ -40,6 +40,7 @@ export const generateEmbedding = async (value: string): Promise<number[]> => {
 };
 
 export const findRelevantContent = async (userQuery: string) => {
+  console.log(userQuery);
   const userQueryEmbedded = await generateEmbedding(userQuery);
   const similarity = sql<number>`1 - (${cosineDistance(
     embeddings.embedding,
@@ -51,5 +52,6 @@ export const findRelevantContent = async (userQuery: string) => {
     .where(gt(similarity, 0.5))
     .orderBy((t) => desc(t.similarity))
     .limit(4);
+  console.log(similarGuides);
   return similarGuides;
 };
