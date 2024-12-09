@@ -3,75 +3,89 @@
 import { useChat } from "ai/react";
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { BrowserMultiFormatReader } from "@zxing/browser";
+import { Html5Qrcode } from "html5-qrcode";
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit } = useChat({
-    maxSteps: 10,
+    maxSteps: 5,
   });
 
   const [files, setFiles] = useState<FileList | undefined>(undefined);
-  const [isScanning, setIsScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const codeReader = useRef(new BrowserMultiFormatReader());
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
-  const startScanning = async () => {
+  const startScanner = async () => {
     try {
-      setIsScanning(true);
-      const videoInputDevices =
-        await codeReader.current.listVideoInputDevices();
-      const selectedDeviceId = videoInputDevices[0].deviceId;
-
-      if (videoRef.current) {
-        codeReader.current.decodeFromConstraints(
-          {
-            video: { deviceId: selectedDeviceId },
-          },
-          videoRef.current,
-          (result, error) => {
-            if (result) {
-              // Create a synthetic event to simulate input change
-              const syntheticEvent = {
-                target: { value: result.getText() },
-              } as React.ChangeEvent<HTMLInputElement>;
-
-              handleInputChange(syntheticEvent);
-              stopScanning();
-            }
-          }
-        );
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        await navigator.mediaDevices.getUserMedia({ video: true });
       }
     } catch (err) {
-      console.error("Error accessing camera:", err);
+      console.error("Camera permission denied:", err);
+      return;
     }
+
+    const scanner = new Html5Qrcode("reader");
+    scannerRef.current = scanner;
+
+    scanner
+      .start(
+        { facingMode: "environment" }, // Use the back camera
+        {
+          fps: 10, // Frame per second
+          qrbox: { width: 250, height: 250 }, // Scanning box size
+        },
+        (decodedText) => {
+          handleInputChange({
+            target: {
+              value:
+                "Product code is " + decodedText + ", is it harmful or not?",
+            },
+          }); // Append to the input field
+          stopScanner();
+        },
+        (errorMessage) => {
+          console.log("Scanning error:", errorMessage);
+        }
+      )
+      .catch((err) => console.error("Scanner initialization error:", err));
+    setIsScanning(true);
   };
 
-  const stopScanning = () => {
-    codeReader.current.reset();
-    setIsScanning(false);
+  const stopScanner = () => {
+    if (scannerRef.current) {
+      scannerRef.current.stop().then(() => {
+        scannerRef.current = null;
+        setIsScanning(false);
+      });
+    }
   };
 
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
       {messages.map((m) => (
         <div key={m.id} className="whitespace-pre-wrap">
-          {m.role === "user" ? "User: " : "AI: "}
-          {m.content}
+          {m.role === "user" ? (
+            <span className="font-bold text-blue-500">User:</span>
+          ) : (
+            <span className="font-bold text-green-500">AI:</span>
+          )}{" "}
+          {m.content || "Generating response..."}
           <div>
-            {m?.experimental_attachments
-              ?.filter((attachment) =>
-                attachment?.contentType?.startsWith("image/")
-              )
-              .map((attachment, index) => (
-                <Image
-                  key={`${m.id}-${index}`}
-                  src={attachment.url}
-                  width={500}
-                  height={500}
-                  alt={attachment.name ?? `attachment-${index}`}
-                />
-              ))}
+            {m.experimental_attachments &&
+              m.experimental_attachments
+                .filter((attachment) =>
+                  attachment?.contentType?.startsWith("image/")
+                )
+                .map((attachment, index) => (
+                  <Image
+                    key={`${m.id}-${index}`}
+                    src={attachment.url}
+                    width={500}
+                    height={500}
+                    alt={attachment.name ?? `attachment-${index}`}
+                  />
+                ))}
           </div>
         </div>
       ))}
@@ -82,40 +96,39 @@ export default function Chat() {
           handleSubmit(event, {
             experimental_attachments: files,
           });
+
           setFiles(undefined);
+
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
           }
         }}
       >
-        {isScanning && (
-          <video ref={videoRef} className="w-full h-48 object-cover mb-2" />
-        )}
-        <div className="flex gap-2 mb-2">
-          <input
-            type="file"
-            onChange={(event) => {
-              if (event.target.files) {
-                setFiles(event.target.files);
-              }
-            }}
-            multiple
-            ref={fileInputRef}
-          />
-          <button
-            type="button"
-            onClick={isScanning ? stopScanning : startScanning}
-            className="px-4 py-2 bg-blue-500 text-white rounded"
-          >
-            {isScanning ? "Stop Scanning" : "Scan Barcode"}
-          </button>
-        </div>
+        <input
+          type="file"
+          className=""
+          onChange={(event) => {
+            if (event.target.files) {
+              setFiles(event.target.files);
+            }
+          }}
+          multiple
+          ref={fileInputRef}
+        />
         <input
           className="w-full p-2"
           value={input}
           placeholder="Say something..."
           onChange={handleInputChange}
         />
+        <button
+          type="button"
+          className="w-full p-2 bg-blue-500 text-white rounded mt-2"
+          onClick={isScanning ? stopScanner : startScanner}
+        >
+          {isScanning ? "Stop Scanning" : "Start Barcode Scanner"}
+        </button>
+        <div id="reader" className="mt-2" />
       </form>
     </div>
   );
