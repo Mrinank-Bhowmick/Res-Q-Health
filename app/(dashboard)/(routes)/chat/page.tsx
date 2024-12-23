@@ -1,13 +1,18 @@
 "use client";
-
-import { useChat } from "ai/react";
-import { useRef, useState } from "react";
+import { Message, useChat } from "ai/react";
+import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import { Html5Qrcode } from "html5-qrcode";
 
 export default function Chat() {
+  const initialMessages: Message[] = [
+    { id: "1", role: "user", content: "1234567890123" },
+    { id: "2", role: "system", content: "123" },
+  ];
+
   const { messages, input, handleInputChange, handleSubmit } = useChat({
     maxSteps: 5,
+    initialMessages,
   });
 
   const [files, setFiles] = useState<FileList | undefined>(undefined);

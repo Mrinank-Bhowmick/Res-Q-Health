@@ -84,6 +84,9 @@ export async function POST(req: Request) {
         execute: async ({ question }) => findRelevantContent(question),
       }),
     },
+    async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
+      await saveChat({ text, toolCalls, toolResults });
+    },
   });
 
   //return result.then((r) => new Response(JSON.stringify(r), { status: 200 }));  ---> generateText
