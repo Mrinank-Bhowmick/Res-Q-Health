@@ -5,10 +5,9 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 
 const menuItems = [
-  { name: "Product", href: "#" },
+  { name: "About", href: "#" },
   { name: "Features", href: "#" },
-  { name: "Marketplace", href: "#" },
-  { name: "Company", href: "#" },
+  { name: "FAQ", href: "#" },
 ];
 
 const Hero = () => {
@@ -27,7 +26,7 @@ const Hero = () => {
         <div className="absolute left-32 bottom-52 opacity-0 animate-[slideFromLeft_1s_ease-out_0.2s_forwards]">
           <Image
             src="https://ui.metamorix.com/favicon.ico"
-            alt="Metamorix Logo"
+            alt="ResQ Health Logo"
             width={32}
             height={40}
             className="h-10 w-8"
@@ -112,7 +111,7 @@ const Header = () => {
 
   return (
     <header className="relative w-full">
-      <div className="mx-auto flex items-center justify-between px-8 py-4">
+      <div className="mx-auto flex items-center justify-between px-8 py-2">
         <div>
           <Image
             src="https://ui.metamorix.com/favicon.ico"
@@ -122,8 +121,8 @@ const Header = () => {
             className="h-10 w-8"
           />
           <p className="text-base">
-            <span className="font-bold">Meta</span>
-            morix UI
+            <span className="font-bold">ResQ</span>
+            Health
           </p>
         </div>
         <div className="hidden lg:block">

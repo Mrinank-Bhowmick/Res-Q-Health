@@ -8,11 +8,12 @@ const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
-// Allow streaming responses up to 30 seconds
+// Allow streaming responses up to 60 seconds
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
+  console.log(messages);
 
   const result = streamText({
     model: google("gemini-1.5-pro-latest"),
@@ -84,9 +85,10 @@ export async function POST(req: Request) {
         execute: async ({ question }) => findRelevantContent(question),
       }),
     },
-    async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
-      await saveChat({ text, toolCalls, toolResults });
-    },
+    // async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
+    //   console.log("Message: ", messages);
+    //   console.log("Text: ", text);
+    // },
   });
 
   //return result.then((r) => new Response(JSON.stringify(r), { status: 200 }));  ---> generateText

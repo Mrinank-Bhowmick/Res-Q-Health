@@ -6,8 +6,8 @@ import { Html5Qrcode } from "html5-qrcode";
 
 export default function Chat() {
   const initialMessages: Message[] = [
-    { id: "1", role: "user", content: "1234567890123" },
-    { id: "2", role: "system", content: "123" },
+    { id: "1", role: "user", content: "1+1=tom?" },
+    { id: "2", role: "assistant", content: "ok" },
   ];
 
   const { messages, input, handleInputChange, handleSubmit } = useChat({
