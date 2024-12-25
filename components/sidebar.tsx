@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
   return (
     <>
       {/* Mobile Menu Button */}
-      <div className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-gray-800 text-white">
+      <div className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-blue-700 text-white">
         {isOpen ? (
           <div></div>
         ) : (
@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed md:relative top-0 left-0 h-full bg-gray-800 text-white w-64 p-6 transition-transform duration-300 ease-in-out ${
+        className={`fixed md:relative top-0 left-0 h-full bg-blue-700 text-white w-64 p-6 transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
       >
@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
               <Link
                 key={index}
                 href={item.href}
-                className="block py-2.5 px-4 rounded hover:bg-gray-700 transition"
+                className="block py-2.5 px-4 rounded hover:bg-blue-700 transition"
               >
                 {item.name}
               </Link>
