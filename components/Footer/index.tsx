@@ -6,7 +6,7 @@ import { footerLinks } from "./FooterLinks";
 
 export default function Footer() {
   return (
-    <footer className="bg-green-700" aria-labelledby="footer-heading">
+    <footer className="bg-gradient-to-b from-teal-600 to-teal-700 text-white  transition-all duration-300 ease-in-out " aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">
         Footer
       </h2>
