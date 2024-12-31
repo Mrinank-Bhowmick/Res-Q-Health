@@ -1,4 +1,4 @@
-import Sidebar from "@/components/sidebar";
+import Sidebar from "@/components/shared/sidebar";
 import { Input } from "@/components/ui/input";
 import React from "react";
 

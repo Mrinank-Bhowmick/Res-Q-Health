@@ -12,8 +12,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import Sidebar from "@/components/sidebar";
-import Dropdown from "@/components/Dropdown"; // Ensure you have this component or build a similar one.
+import Sidebar from "@/components/shared/sidebar";
+import Dropdown from "@/components/shared/Dropdown"; // Ensure you have this component or build a similar one.
 import covidData from "@/lib/json/covid.json"; // Import your JSON file
 
 // Define the structure of the JSON data
