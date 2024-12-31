@@ -8,7 +8,7 @@ const Hero = () => {
     <div>
       <Header />
       <div
-        className="relative isolate sm:px-6 lg:px-8 min-h-[85vh]"
+        className="relative isolate sm:px-6 lg:px-8 min-h-[85vh] mt-[15vh]"
         style={{
           backgroundImage:
             "radial-gradient(circle at 1px 1px, rgba(30, 58, 138, 0.4) 1.5px, transparent 0)", // Dark blue (blue-900) with 0.3 opacity

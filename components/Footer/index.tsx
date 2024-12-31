@@ -6,7 +6,10 @@ import { footerLinks } from "./FooterLinks";
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-teal-600 to-teal-700 text-white  transition-all duration-300 ease-in-out " aria-labelledby="footer-heading">
+    <footer
+      className="bg-gradient-to-b from-teal-600 to-teal-700 text-white  transition-all duration-300 ease-in-out "
+      aria-labelledby="footer-heading"
+    >
       <h2 id="footer-heading" className="sr-only">
         Footer
       </h2>
@@ -27,18 +30,24 @@ export default function Footer() {
               </p>
             </div>
             <p className="text-sm leading-6 text-gray-300">
-              AI-powered assistant for personalized care and proactive public health solutions.
+              AI-powered assistant for personalized care and proactive public
+              health solutions.
             </p>
             <SocialLinks />
           </div>
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">Product</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">
+                  Product
+                </h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerLinks.product.map((item) => (
                     <li key={item.name}>
-                      <a href={item.href} className="text-sm leading-6 text-gray-300 hover:text-white">
+                      <a
+                        href={item.href}
+                        className="text-sm leading-6 text-gray-300 hover:text-white"
+                      >
                         {item.name}
                       </a>
                     </li>
@@ -46,11 +55,16 @@ export default function Footer() {
                 </ul>
               </div>
               <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-white">Company</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">
+                  Company
+                </h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerLinks.company.map((item) => (
                     <li key={item.name}>
-                      <a href={item.href} className="text-sm leading-6 text-gray-300 hover:text-white">
+                      <a
+                        href={item.href}
+                        className="text-sm leading-6 text-gray-300 hover:text-white"
+                      >
                         {item.name}
                       </a>
                     </li>
@@ -59,11 +73,16 @@ export default function Footer() {
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-semibold leading-6 text-white">Team</h3>
+              <h3 className="text-sm font-semibold leading-6 text-white">
+                Team
+              </h3>
               <ul role="list" className="mt-6 space-y-4">
                 {footerLinks.team.map((item) => (
                   <li key={item.name}>
-                    <a href={item.href} className="text-sm leading-6 text-gray-300 hover:text-white">
+                    <a
+                      href={item.href}
+                      className="text-sm leading-6 text-gray-300 hover:text-white"
+                    >
                       {item.name}
                     </a>
                   </li>
