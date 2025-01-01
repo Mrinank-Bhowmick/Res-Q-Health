@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { PanelRightOpen, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
+import { UserButton, useUser } from "@clerk/nextjs";
 
 interface SidebarProps {
   title: string;
@@ -11,6 +12,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
+  const user = useUser();
 
   useEffect(() => {
     const handleResize = () => {
@@ -36,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed md:relative top-0 left-0 h-full bg-blue-700 text-white w-64 p-6 transition-transform duration-300 ease-in-out ${
+        className={`fixed flex flex-col justify-between md:relative top-0 left-0 h-full bg-teal-600 text-white w-64 p-6 transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
       >
@@ -53,12 +55,16 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
               <Link
                 key={index}
                 href={item.href}
-                className="block py-2.5 px-4 rounded hover:bg-blue-700 transition"
+                className="block py-2.5 px-4 rounded hover:bg-teal-500 transition"
               >
                 {item.name}
               </Link>
             ))}
           </nav>
+        </div>
+        <div className="bg-teal-700 px-4 py-3 flex items-center gap-3 rounded-lg">
+          <UserButton />
+          {user.user?.username}
         </div>
       </div>
     </>

@@ -11,7 +11,6 @@ const Page = async () => {
     { name: "Stats", href: "/stats" },
   ];
   const user = await currentUser();
-  console.log(user);
 
   return (
     <div className="flex h-screen">
@@ -22,7 +21,6 @@ const Page = async () => {
             <div className="flex justify-center items-center h-full">
               <div className="text-center">
                 <h1 className="text-3xl font-bold">{user?.username}</h1>
-                <UserButton />
                 <p className="text-lg">Welcome to ResQ Health Chatbot</p>
               </div>
             </div>
