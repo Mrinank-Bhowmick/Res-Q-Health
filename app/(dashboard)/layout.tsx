@@ -1,4 +1,5 @@
 import Sidebar from "@/components/shared/sidebar";
+import { ClerkProvider } from "@clerk/nextjs";
 import React from "react";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -9,9 +10,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   return (
-    <div className="h-full relative">
-      <div className="">{children}</div>
-    </div>
+    <ClerkProvider>
+      <div className="h-full relative">
+        <div className="">{children}</div>
+      </div>
+    </ClerkProvider>
   );
 };
 
