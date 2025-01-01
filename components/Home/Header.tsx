@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { UserButton, useUser} from "@clerk/nextjs";
 
 const menuItems = [
   { name: "About", href: "#" },
@@ -13,6 +14,7 @@ const menuItems = [
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isSignedIn,isLoaded } = useUser();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -46,13 +48,48 @@ const Header = () => {
           </ul>
         </div>
         <div className="hidden lg:block">
+        {!isLoaded ? ( // Show loading state until `isLoaded` is true
+            <div className="text-sm font-semibold">Loading...</div>
+          ) : isSignedIn ? (
+            <UserButton
+            appearance={{
+              elements: {
+                userButtonAvatarBox: "w-8 h-8", // Adjust avatar size
+                userButtonTrigger: "p-1", // Padding around the button
+              },
+            }}
+             />
+          ) : (
           <button className="group flex h-10 items-center justify-center rounded-md border border-orange-600 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 px-4 text-neutral-50 shadow-[inset_0_1px_0px_0px_#fdba74] active:[box-shadow:none]">
             <Link href="/sign-in">Login</Link>
           </button>
+          )}    
         </div>
-        <div className="lg:hidden">
-          <Menu onClick={toggleMenu} className="size-6 cursor-pointer" />
+        <div className="lg:hidden flex flex-row justify-center gap-2">
+        {!isLoaded ? ( // Show loading state until `isLoaded` is true
+            <div className="text-sm font-semibold">Loading...</div>
+          ) : isSignedIn ? (
+            <UserButton  
+             appearance={{
+              elements: {
+                userButtonAvatarBox: "w-8 h-8", // Adjust avatar size
+                userButtonTrigger: "p-1", // Padding around the button
+              },
+            }}
+            />
+          ) : (
+                <Link
+                  href="/sign-in"
+                  className="group flex h-10 items-center justify-center rounded-md border border-orange-600 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 px-4 text-neutral-50 shadow-[inset_0_1px_0px_0px_#fdba74] active:[box-shadow:none]"
+                >
+                  <span className="block group-active:[transform:translate3d(0,1px,0)]">
+                    Login
+                  </span>
+                </Link>
+          )}
+          <Menu onClick={toggleMenu} className="size-6 cursor-pointer mt-2" />
         </div>
+
         {isMenuOpen && (
           <div className="absolute inset-x-0 top-0 z-50 origin-top-right transition lg:hidden">
             <div className="divide-y-2 divide-gray-50 rounded-lg bg-white shadow-lg ring-1 ring-black/5 dark:bg-gradient-to-b dark:from-neutral-800 dark:to-gray-800 dark:ring-gray-700/5">
@@ -74,7 +111,7 @@ const Header = () => {
                       />
                     </svg>
 
-                    <span className="font-bold">Metamorix UI</span>
+                    <span className="font-bold">ResQ Health</span>
                   </div>
                   <div className="-mr-2">
                     <button
@@ -102,14 +139,6 @@ const Header = () => {
                     ))}
                   </nav>
                 </div>
-                <a
-                  href="#"
-                  className="group flex h-10 items-center justify-center rounded-md border border-orange-600 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 px-4 text-neutral-50 shadow-[inset_0_1px_0px_0px_#fdba74] active:[box-shadow:none]"
-                >
-                  <span className="block group-active:[transform:translate3d(0,1px,0)]">
-                    Login
-                  </span>
-                </a>
               </div>
             </div>
           </div>

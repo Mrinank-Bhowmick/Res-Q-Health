@@ -2,8 +2,12 @@
 
 import Image from "next/image";
 import Header from "@/components/Home/Header";
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 const Hero = () => {
+  const { isSignedIn } = useUser();
+
   return (
     <div>
       <Header />
@@ -72,15 +76,25 @@ const Hero = () => {
               health solutions.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6 opacity-0 animate-[slideInFromBottom_1s_ease-out_0.8s_forwards]">
-              <a
-                href="#"
+              {isSignedIn?
+              <Link
+                href="/chat"
                 className="group flex h-10 items-center justify-center rounded-md border border-orange-600 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 px-4 text-neutral-50 shadow-[inset_0_1px_0px_0px_#fdba74] active:[box-shadow:none]"
               >
                 <span className="block group-active:[transform:translate3d(0,1px,0)]">
                   Get started
                 </span>
-              </a>
-
+              </Link>
+              :
+              <Link
+              href="/sign-in"
+              className="group flex h-10 items-center justify-center rounded-md border border-orange-600 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 px-4 text-neutral-50 shadow-[inset_0_1px_0px_0px_#fdba74] active:[box-shadow:none]"
+            >
+              <span className="block group-active:[transform:translate3d(0,1px,0)]">
+                Get started
+              </span>
+            </Link>
+}
               <a
                 href="#"
                 className="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-300"

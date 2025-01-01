@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { PanelRightOpen, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 interface SidebarProps {
   title: string;
@@ -13,6 +14,7 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
   const user = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const handleResize = () => {
@@ -44,7 +46,9 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
       >
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">{title}</h2>
+            <h2 className="text-2xl font-bold cursor-pointer" onClick={() => router.push("/")}>
+              {title}
+            </h2>
             {windowWidth <= 768 && isOpen && (
               <PanelRightOpen onClick={() => setIsOpen(!isOpen)} size={24} />
             )}
