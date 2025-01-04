@@ -4,12 +4,10 @@ import { Input } from "@/components/ui/input";
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import React from "react";
+import { sidebarItems } from "@/lib/items/sidebarItems";
 
 const Page = async () => {
-  const sidebarItems = [
-    { name: "Chatbot", href: "/chat" },
-    { name: "Stats", href: "/stats" },
-  ];
+  
   const user = await currentUser();
 
   return (
