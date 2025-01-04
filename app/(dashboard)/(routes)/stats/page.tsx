@@ -15,6 +15,7 @@ import {
 import Sidebar from "@/components/shared/sidebar";
 import Dropdown from "@/components/shared/Dropdown"; // Ensure you have this component or build a similar one.
 import covidData from "@/lib/json/covid.json"; // Import your JSON file
+import { sidebarItems } from "@/lib/items/sidebarItems";
 
 // Define the structure of the JSON data
 interface RegionalData {
@@ -38,11 +39,6 @@ const covidDataTyped = covidData as CovidData;
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Page = () => {
-  const sidebarItems = [
-    { name: "Chatbot", href: "/chat" },
-    { name: "Stats", href: "/stats" },
-  ];
-
   const [locations, setLocations] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [chartData, setChartData] = useState<any>(null);
