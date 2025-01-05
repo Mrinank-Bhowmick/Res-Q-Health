@@ -1,7 +1,7 @@
 "use client"
 import Sidebar from "@/components/shared/sidebar";
 import { UserButton } from "@clerk/nextjs";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { sidebarItems } from "@/lib/items/sidebarItems";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
@@ -15,13 +15,35 @@ type HealthCenter = {
 
 const HealthCenter = () => {
   const [centerType, setCenterType] = useState<string>("vaccination");
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
-  const fetchHealthCenters = async ({ pageParam = 0 }: { pageParam?: number }) => {
+  useEffect(()=>{
+    const getLocation = async () =>{
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve,reject)=>{
+          navigator.geolocation.getCurrentPosition(resolve,(error)=>{
+            if(error.code === error.PERMISSION_DENIED){
+              alert("Location is denied.Please enable it in your browser settings");
+            }
+            reject(error)
+          });
+        });
+        const {latitude,longitude} = position.coords;
+        setLocation({latitude,longitude});
+      } catch (error) {
+        console.error("Geolocation error:",error);
+      }
+    }
+
+    getLocation();
+
+  },[])
+
+  const fetchHealthCenters = useCallback(async ({ pageParam = 0 }: { pageParam?: number }) => {
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject)
-      );
-      const { latitude, longitude } = position.coords;
+       if(!location) return {elements:[]}
+
+      const  {latitude,longitude} = location;
   
       const tag = centerType === "vaccination" ? 'healthcare:speciality' : 'healthcare';
       
@@ -79,7 +101,7 @@ const HealthCenter = () => {
       console.error("Fetch error:", error);
       throw new Error("Failed to fetch health centers. Please try again later.");
     }
-  };
+  },[centerType,location]);
   
 
   const {
@@ -147,7 +169,7 @@ const HealthCenter = () => {
           {data?.pages?.flatMap((page) =>
             page.elements.map((center: HealthCenter, index: number) => (
               <li
-                key={index}
+                key={`${index}-${center.name}-${center.lat}-${center.lon}-${Date.now()}-${Math.random()}`}
                 className="p-4 border rounded-lg shadow-md hover:shadow-lg transition bg-white"
               >
                 <h2 className="text-lg font-bold text-gray-800">{center.name}</h2>
