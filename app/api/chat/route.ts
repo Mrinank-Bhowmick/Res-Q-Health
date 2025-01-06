@@ -1,6 +1,12 @@
 import { createResource } from "@/lib/actions/resources";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { convertToCoreMessages, generateText, streamText, tool } from "ai";
+import {
+  convertToCoreMessages,
+  generateText,
+  Message,
+  streamText,
+  tool,
+} from "ai";
 import { z } from "zod";
 import { findRelevantContent } from "@/lib/ai/embedding";
 
@@ -12,7 +18,7 @@ const google = createGoogleGenerativeAI({
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages }: { messages: Message[] } = await req.json();
   console.log(messages);
 
   const result = streamText({
@@ -85,10 +91,21 @@ export async function POST(req: Request) {
         execute: async ({ question }) => findRelevantContent(question),
       }),
     },
-    // async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
-    //   console.log("Message: ", messages);
-    //   console.log("Text: ", text);
-    // },
+    async onFinish({
+      text,
+      toolCalls,
+      toolResults,
+      usage,
+      finishReason,
+      response,
+    }) {
+      messages.push({
+        role: "assistant",
+        content: text,
+        id: `${messages.length + 1}`,
+      });
+      console.log("Message: ", messages);
+    },
   });
 
   //return result.then((r) => new Response(JSON.stringify(r), { status: 200 }));  ---> generateText

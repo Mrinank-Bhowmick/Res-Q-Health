@@ -1,9 +1,11 @@
 "use client";
 import { Message, useChat } from "ai/react";
-import { useRef, useState, useEffect, useContext, FormEvent } from "react";
+import { useRef, useState, useEffect, useContext, FormEvent, use } from "react";
 import Image from "next/image";
 import { Html5Qrcode } from "html5-qrcode";
 import { ChatContext } from "../../../../../../context/ChatContext";
+import { useParams } from "next/navigation";
+import { useUser, useAuth } from "@clerk/nextjs";
 
 export default function Chat() {
   const initialMessages: Message[] = [];
@@ -17,6 +19,8 @@ export default function Chat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const params = useParams();
+  const chatID = params.id;
 
   const context = useContext(ChatContext);
   if (!context) {
@@ -46,7 +50,6 @@ export default function Chat() {
         },
         (decodedText) => {
           handleInputChange({
-            //@ts-expect-error no error
             target: {
               value:
                 "Product code is " + decodedText + ", is it harmful or not?",
@@ -71,22 +74,38 @@ export default function Chat() {
     }
   };
 
-  useEffect(() => {
-    const submitPrompt = () => {
-      try {
-        if (prompt) {
-          console.log("Starting submission with prompt:", prompt);
+  const { user } = useUser();
+  const { userId } = useAuth();
 
-          append({ role: "user", content: prompt });
-          console.log("Submission completed");
-        }
-      } catch (error) {
-        console.error("Error in submitPrompt:", error);
+  useEffect(() => {
+    const checkAccess = async () => {
+      const response = await fetch("/api/access", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatID,
+          username: user?.username,
+          userID: userId,
+        }),
+      });
+
+      const data = await response.json();
+
+      // make toast notification
+      if (data.hasAccess === false) {
+        alert("You do not have access to this chat");
+      } else {
+        console.log(data);
+        alert("You have access to this chat");
       }
     };
-
-    submitPrompt();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (prompt) {
+      append({ role: "user", content: prompt });
+    } else if (prompt === "") {
+      checkAccess();
+    }
   }, []);
 
   return (
