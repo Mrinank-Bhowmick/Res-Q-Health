@@ -42,6 +42,7 @@ export default function Chat() {
         },
         (decodedText) => {
           handleInputChange({
+            //@ts-expect-error no error
             target: {
               value:
                 "Product code is " + decodedText + ", is it harmful or not?",
