@@ -1,16 +1,14 @@
 "use client";
 import { Message, useChat } from "ai/react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useContext, FormEvent } from "react";
 import Image from "next/image";
 import { Html5Qrcode } from "html5-qrcode";
+import { ChatContext } from "../../../../../../context/ChatContext";
 
 export default function Chat() {
-  const initialMessages: Message[] = [
-    { id: "1", role: "user", content: "1+1=tom?" },
-    { id: "2", role: "assistant", content: "ok" },
-  ];
+  const initialMessages: Message[] = [];
 
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, append } = useChat({
     maxSteps: 5,
     initialMessages,
   });
@@ -19,6 +17,12 @@ export default function Chat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+
+  const context = useContext(ChatContext);
+  if (!context) {
+    throw new Error("chat data not found");
+  }
+  const { prompt } = context;
 
   const startScanner = async () => {
     try {
@@ -46,7 +50,7 @@ export default function Chat() {
               value:
                 "Product code is " + decodedText + ", is it harmful or not?",
             },
-          }); // Append to the input field
+          } as React.ChangeEvent<HTMLInputElement>); // Append to the input field
           stopScanner();
         },
         (errorMessage) => {
@@ -65,6 +69,24 @@ export default function Chat() {
       });
     }
   };
+
+  useEffect(() => {
+    const submitPrompt = () => {
+      try {
+        if (prompt) {
+          console.log("Starting submission with prompt:", prompt);
+
+          append({ role: "user", content: prompt });
+          console.log("Submission completed");
+        }
+      } catch (error) {
+        console.error("Error in submitPrompt:", error);
+      }
+    };
+
+    submitPrompt();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
@@ -98,6 +120,7 @@ export default function Chat() {
       <form
         className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl space-y-2"
         onSubmit={(event) => {
+          console.log(event);
           handleSubmit(event, {
             experimental_attachments: files,
           });
