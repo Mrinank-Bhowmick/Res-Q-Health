@@ -1,175 +1,157 @@
-"use client"
+"use client";
 import Sidebar from "@/components/shared/sidebar";
 import { UserButton } from "@clerk/nextjs";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { sidebarItems } from "@/lib/items/sidebarItems";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 type HealthCenter = {
+  id: number;
   name: string;
   address: string;
   lat: number;
   lon: number;
-  distance:number;
+  distance: number;
 };
 
 const HealthCenter = () => {
   const [centerType, setCenterType] = useState<string>("vaccination");
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [healthCenters, setHealthCenters] = useState<HealthCenter[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(()=>{
-    const getLocation = async () =>{
+  useEffect(() => {
+    const getLocation = async () => {
       try {
-        const position = await new Promise<GeolocationPosition>((resolve,reject)=>{
-          navigator.geolocation.getCurrentPosition(resolve,(error)=>{
-            if(error.code === error.PERMISSION_DENIED){
-              alert("Location is denied.Please enable it in your browser settings");
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, (error) => {
+            if (error.code === error.PERMISSION_DENIED) {
+              alert("Location is denied. Please enable it in your browser settings");
             }
-            reject(error)
+            reject(error);
           });
         });
-        const {latitude,longitude} = position.coords;
-        setLocation({latitude,longitude});
+        const { latitude, longitude } = position.coords;
+        setLocation({ latitude, longitude });
       } catch (error) {
-        console.error("Geolocation error:",error);
+        console.error("Geolocation error:", error);
       }
-    }
+    };
 
     getLocation();
+  }, []);
 
-  },[])
+  useEffect(() => {
+    const fetchHealthCenters = async () => {
+      if (!location) return;
 
-  const fetchHealthCenters = useCallback(async ({ pageParam = 0 }: { pageParam?: number }) => {
-    try {
-       if(!location) return {elements:[]}
+      setLoading(true);
+      setError(null);
 
-      const  {latitude,longitude} = location;
-  
-      const tag = centerType === "vaccination" ? 'healthcare:speciality' : 'healthcare';
-      
-      const limit = 5;
-      //fetching within nearby 100km (around:100000)
-      const overpassQuery = `
-        [out:json];
-        node["${tag}"="${centerType}"](around:100000, ${latitude}, ${longitude});
-        out body ${limit};
-      `;
-      const response = await fetch(
-        `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`
-      );
-  
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`API Error: ${text}`);
+      try {
+        const { latitude, longitude } = location;
+        const tag = centerType === "vaccination" ? "healthcare:speciality" : "healthcare";
+
+        const overpassQuery = `
+          [out:json];
+          node["${tag}"="${centerType}"](around:100000, ${latitude}, ${longitude});
+          out body;
+        `;
+
+        const response = await axios.get(
+          `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`
+        );
+
+        if (response.status !== 200) {
+          throw new Error(`API Error: ${response.statusText}`);
+        }
+
+        const data = response.data;
+        const fetchedHealthCenters = data.elements.map((element: any): HealthCenter => {
+          const address = [
+            element.tags["addr:full"],
+            element.tags["addr:district"],
+            element.tags["addr:postcode"],
+            element.tags["addr:state"],
+          ]
+            .filter(Boolean)
+            .join(", ");
+
+          const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+          const R = 6371; // Earth's radius in kilometers
+          const dLat = toRadians(element.lat - latitude);
+          const dLon = toRadians(element.lon - longitude);
+          const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRadians(latitude)) *
+              Math.cos(toRadians(element.lat)) *
+              Math.sin(dLon / 2) ** 2;
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
+
+          return {
+            id: element.id,
+            name: element.tags.name || "Unnamed Center",
+            address: address || "Address not available",
+            lat: element.lat,
+            lon: element.lon,
+            distance: parseFloat(Number(distance).toFixed(2)),
+          };
+        });
+
+        setHealthCenters(fetchedHealthCenters);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setError("Failed to fetch health centers. Please try again later.");
+      } finally {
+        setLoading(false);
       }
-  
-      const data = await response.json();
-      const healthCenters = data.elements.map((element: any) => {
-        const addressParts = [
-          element.tags["addr:full"],
-          element.tags["addr:district"],
-          element.tags["addr:postcode"],
-          element.tags["addr:state"],
-        ].filter(Boolean); // Filter out undefined or null values
-        const address = addressParts.join(", ");
-  
+    };
 
-      // Calculate the distance using the Haversine formula
-      const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-      const R = 6371; // Earth's radius in kilometers
-      const dLat = toRadians(element.lat - latitude);
-      const dLon = toRadians(element.lon - longitude);
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRadians(latitude)) *
-          Math.cos(toRadians(element.lat)) *
-          Math.sin(dLon / 2) ** 2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c; // Distance in kilometers
-
-        return {
-          name: element.tags.name || "Unnamed Center",
-          address: address || "Address not available",
-          lat: element.lat,
-          lon: element.lon,
-          distance: distance.toFixed(2),//in km
-        };
-      });
-  
-      return { elements: healthCenters };
-    } catch (error) {
-      console.error("Fetch error:", error);
-      throw new Error("Failed to fetch health centers. Please try again later.");
+    if (location) {
+      fetchHealthCenters();
     }
-  },[centerType,location]);
-  
-
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isError,
-    error,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["healthCenters", centerType],
-    queryFn: fetchHealthCenters,
-    getNextPageParam: (lastPage, pages) => {
-      // Check if the last page's results are less than the limit, if so, no next page
-      return lastPage.elements.length === 5 ? pages.length : undefined;
-    },
-    initialPageParam: 0,
-  });
-  
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollHeight, scrollTop, clientHeight } = e.currentTarget;
-
-    // Check if we're near the bottom of the page, and if so, fetch the next page
-    if (scrollHeight - scrollTop - clientHeight < 100 && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
+  }, [centerType, location]);
 
   return (
     <div className="flex h-screen">
-    <Sidebar title="ResQ Health" sidebarItems={sidebarItems} />
-    <main className="flex-1 p-6 lg:ml-64 md:ml-16  overflow-y-auto" onScroll={handleScroll}>
-      <header className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl max-sm:ml-12 max-sm:w-full font-bold text-blue-600">Nearby Health Centers</h1>
-        <UserButton />
-      </header>
+      <Sidebar title="ResQ Health" sidebarItems={sidebarItems} />
+      <main className="flex-1 p-6 lg:ml-64 md:ml-16 overflow-y-auto">
+        <header className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl max-sm:ml-12 max-sm:w-full font-bold text-blue-600">Nearby Health Centers</h1>
+          <UserButton />
+        </header>
 
-      <section className="mb-6">
-        <label htmlFor="centerType" className="block text-lg font-medium text-gray-700">
-          Select Health Center Type:
-        </label>
-        <select
-          id="centerType"
-          value={centerType}
-          onChange={(e) => setCenterType(e.target.value)}
-          className="mt-2 p-2 w-[100%] border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="vaccination">Vaccination Centers</option>
-          <option value="laboratory">Laboratories</option>
-          <option value="clinic">Clinics</option>
-          <option value="hospital">Hospitals</option>
-          <option value="pharmacy">Pharmacies</option>
-        </select>
-      </section>
+        <section className="mb-6">
+          <label htmlFor="centerType" className="block text-lg font-medium text-gray-700">
+            Select Health Center Type:
+          </label>
+          <select
+            id="centerType"
+            value={centerType}
+            onChange={(e) => setCenterType(e.target.value)}
+            className="mt-2 p-2 w-[100%] border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="vaccination">Vaccination Centers</option>
+            <option value="laboratory">Laboratories</option>
+            <option value="clinic">Clinics</option>
+            <option value="hospital">Hospitals</option>
+            <option value="pharmacy">Pharmacies</option>
+          </select>
+        </section>
 
-      {isLoading ? (
-        <p className="text-lg text-blue-500">Loading health centers nearby...</p>
-      ) : isError ? (
-        <p className="text-lg text-red-500">{(error as Error).message}</p>
-      ) : data?.pages?.flatMap((page) => page.elements)?.length === 0 ? (
-        <p className="text-lg text-gray-500">No health centers found nearby.</p>
-      ) : (
-        <ul className="space-y-4">
-          {data?.pages?.flatMap((page) =>
-            page.elements.map((center: HealthCenter, index: number) => (
+        {loading ? (
+          <p className="text-lg text-blue-500">Loading health centers nearby...</p>
+        ) : error ? (
+          <p className="text-lg text-red-500">{error}</p>
+        ) : healthCenters.length === 0 ? (
+          <p className="text-lg text-gray-500">No health centers found nearby.</p>
+        ) : (
+          <ul className="space-y-4">
+            {healthCenters.map((center, index) => (
               <li
-                key={`${index}-${center.name}-${center.lat}-${center.lon}-${Date.now()}-${Math.random()}`}
+                key={`${index}-${center.name}-${center.lat}-${center.lon}`}
                 className="p-4 border rounded-lg shadow-md hover:shadow-lg transition bg-white"
               >
                 <h2 className="text-lg font-bold text-gray-800">{center.name}</h2>
@@ -185,13 +167,11 @@ const HealthCenter = () => {
                   View on Google Maps
                 </a>
               </li>
-            ))
-          )}
-        </ul>
-      )}
-      {isFetchingNextPage && <p className="text-center text-lg text-blue-500">Loading more...</p>}
-    </main>
-  </div>
+            ))}
+          </ul>
+        )}
+      </main>
+    </div>
   );
 };
 
