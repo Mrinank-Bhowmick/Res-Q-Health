@@ -5,12 +5,21 @@ import Link from "next/link";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
+interface ChatHistory {
+  chatID: string;
+}
+
 interface SidebarProps {
   title: string;
   sidebarItems: { name: string; href: string }[];
+  historyIDs?: ChatHistory[] | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  title,
+  sidebarItems,
+  historyIDs,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
   const user = useUser();
@@ -46,7 +55,10 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
       >
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold cursor-pointer" onClick={() => router.push("/")}>
+            <h2
+              className="text-2xl font-bold cursor-pointer"
+              onClick={() => router.push("/")}
+            >
               {title}
             </h2>
             {windowWidth <= 768 && isOpen && (
@@ -64,6 +76,25 @@ const Sidebar: React.FC<SidebarProps> = ({ title, sidebarItems }) => {
                 {item.name}
               </Link>
             ))}
+          </nav>
+          <nav className="space-y-4">
+            <h3 className="text-lg font-bold">Chat History</h3>
+            {historyIDs ? (
+              historyIDs.map((item, index) => (
+                <Link
+                  key={index}
+                  href={`/chat/c/${item.chatID}`}
+                  className="block py-2.5 px-4 rounded hover:bg-teal-500 transition"
+                >
+                  {item.chatID.slice(0, 10) + "..."}
+                </Link>
+              ))
+            ) : (
+              <div className="animate-pulse flex flex-col space-y-4">
+                <div className="h-10 bg-teal-500/50 rounded w-3/4"></div>
+                <div className="h-10 bg-teal-500/50 rounded w-3/4"></div>
+              </div>
+            )}
           </nav>
         </div>
         <div className="bg-teal-700 px-4 py-3 flex items-center gap-3 rounded-lg">

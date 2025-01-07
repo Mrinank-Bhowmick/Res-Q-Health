@@ -8,6 +8,7 @@ const ChatPage = async () => {
   const serializedUser = user
     ? {
         username: user.username,
+        id: user.id,
       }
     : null;
 

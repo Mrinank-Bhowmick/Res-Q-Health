@@ -6,37 +6,34 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
+// return the all chatIDs for the userID
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { chatID, userID } = body;
-    console.log("chatID:", chatID, "userID:", userID);
+    const { userID } = body;
+    console.log("chat-history API route log - userID:", userID);
 
-    if (!chatID || !userID) {
+    if (!userID) {
       return NextResponse.json(
-        { error: "chatID and userID are required" },
+        { error: "userID is required" },
         { status: 400 }
       );
     }
 
     const query = `
-      SELECT history
+      SELECT "chatID"
       FROM chathistory
-      WHERE "chatID" = $1 AND "userID" = $2
+      WHERE "userID" = $1
     `;
-    const values = [chatID, userID];
+    const values = [userID];
     const result = await pool.query(query, values);
-    //console.log("Result:", result.rows[0].history[0]);
+    console.log("Result:", result.rows);
     //console.log("Rows:", result.rowCount);
 
-    if (result.rowCount === 0) {
-      return NextResponse.json({ hasAccess: false });
-    } else {
-      return NextResponse.json({
-        history: result.rows[0].history,
-        hasAccess: true,
-      });
-    }
+    return NextResponse.json({
+      chatIDs: result.rows,
+    });
   } catch (error) {
     console.error("Error fetching chat history:", error);
     return NextResponse.json(

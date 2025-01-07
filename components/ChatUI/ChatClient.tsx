@@ -5,15 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User } from "@clerk/nextjs/server";
 import { v4 as uuidv4 } from "uuid";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ChatContext } from "../../context/ChatContext";
 import { sidebarItems } from "@/lib/items/sidebarItems";
 import { useRouter } from "next/navigation";
 
 interface SerializableUser {
   username: string | null;
+  id: string | null;
 }
-
+interface ChatHistory {
+  chatID: string;
+}
 interface ChatClientProps {
   user: SerializableUser | null;
 }
@@ -21,6 +24,7 @@ interface ChatClientProps {
 const ChatClient = ({ user }: ChatClientProps) => {
   const context = useContext(ChatContext);
   const [initialPrompt, setInitialPrompt] = useState<string>("");
+  const [historyIDs, setHistoryIDs] = useState<ChatHistory[] | null>(null);
   const router = useRouter();
 
   if (!context) {
@@ -34,10 +38,36 @@ const ChatClient = ({ user }: ChatClientProps) => {
     setPrompt(text);
     router.push(`/chat/c/${chatID}`);
   };
+  const getHistoryIDs = async () => {
+    const userID = user?.id;
+    const response = await fetch("/api/chat-history-ids", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userID }),
+    });
+    const data = await response.json();
+    return data.chatIDs;
+  };
+
+  useEffect(() => {
+    const fetchHistoryIDs = async () => {
+      const historyIDs = await getHistoryIDs();
+      console.log("History IDs:", historyIDs);
+      setHistoryIDs(historyIDs);
+    };
+    fetchHistoryIDs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex h-screen">
-      <Sidebar title="ResQ Health" sidebarItems={sidebarItems} />
+      <Sidebar
+        title="ResQ Health"
+        sidebarItems={sidebarItems}
+        historyIDs={historyIDs}
+      />
       <div className="w-full flex flex-col">
         <div className="flex justify-start p-2 h-[85vh]">
           <div className="bg-teal-50 h-full w-full rounded-md">
