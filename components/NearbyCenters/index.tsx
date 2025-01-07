@@ -15,11 +15,34 @@ type HealthCenter = {
 };
 
 const HealthCenter = () => {
-  const [centerType, setCenterType] = useState<string>("vaccination");
+  const [centerType, setCenterType] = useState<string>("healthcare");
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [healthCenters, setHealthCenters] = useState<HealthCenter[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [pincode, setPincode] = useState<string>("");
+  const [locationDenied, setLocationDenied] = useState<boolean>(false);
+
+  const fetchCoordinatesFromPincode = async (pin: string) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?postalcode=${pin}&countrycodes=in&format=json`,
+        {
+          headers: { "User-Agent": "ResQHealth/1.0 (your.email@example.com)" },
+        }
+      );
+      const data = await response.json();
+      if (data.length > 0) {
+        const { lat, lon } = data[0];
+        setLocation({ latitude: parseFloat(lat), longitude: parseFloat(lon) });
+      } else {
+        alert("Invalid pincode. Please try again.");
+      }
+    } catch (error) {
+      console.error("Pincode fetch error:", error);
+      alert("Failed to fetch location from pincode. Please try again.");
+    }
+  };
 
   useEffect(() => {
     const getLocation = async () => {
@@ -27,7 +50,8 @@ const HealthCenter = () => {
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, (error) => {
             if (error.code === error.PERMISSION_DENIED) {
-              alert("Location is denied. Please enable it in your browser settings");
+              setLocationDenied(true);
+              alert("Location is denied. Please provide your pincode.");
             }
             reject(error);
           });
@@ -140,6 +164,28 @@ const HealthCenter = () => {
             <option value="pharmacy">Pharmacies</option>
           </select>
         </section>
+
+        {locationDenied && (
+          <section className="mb-6">
+            <label htmlFor="pincode" className="block text-lg font-medium text-gray-700">
+              Enter Pincode:
+            </label>
+            <input
+              type="text"
+              id="pincode"
+              value={pincode}
+              onChange={(e) => setPincode(e.target.value)}
+              placeholder="Enter your pincode"
+              className="mt-2 p-2 w-[100%] border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              onClick={() => fetchCoordinatesFromPincode(pincode)}
+              className="mt-4 p-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600"
+            >
+              Find Location
+            </button>
+          </section>
+        )}
 
         {loading ? (
           <p className="text-lg text-blue-500">Loading health centers nearby...</p>
