@@ -19,7 +19,7 @@ export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const { messages }: { messages: Message[] } = await req.json();
-  console.log(messages);
+  //console.log(messages);
 
   const result = streamText({
     model: google("gemini-1.5-pro-latest"),

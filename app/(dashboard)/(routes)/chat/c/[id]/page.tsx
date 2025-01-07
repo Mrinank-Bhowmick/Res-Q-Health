@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
 
 export default function Chat() {
-  const initialMessages: Message[] = [];
+  const [initialMessages, setInitialMessages] = useState<Message[]>([]);
 
   const { messages, input, handleInputChange, handleSubmit, append } = useChat({
     maxSteps: 5,
@@ -20,7 +20,6 @@ export default function Chat() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const params = useParams();
-  const chatID = params.id;
 
   const context = useContext(ChatContext);
   if (!context) {
@@ -77,36 +76,52 @@ export default function Chat() {
   const { user } = useUser();
   const { userId } = useAuth();
 
+  // First useEffect for access check
   useEffect(() => {
     const checkAccess = async () => {
-      const response = await fetch("/api/access", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chatID,
-          username: user?.username,
-          userID: userId,
-        }),
-      });
+      try {
+        const response = await fetch("/api/access", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chatID: params.id,
+            username: user?.username,
+            userID: user?.id,
+          }),
+        });
 
-      const data = await response.json();
-
-      // make toast notification
-      if (data.hasAccess === false) {
-        alert("You do not have access to this chat");
-      } else {
-        console.log(data);
-        alert("You have access to this chat");
+        const data = await response.json();
+        if (!data.hasAccess) {
+          alert("You do not have access to this chat");
+        } else {
+          const history = data.history.map((message: any, index: number) => ({
+            id: index.toString(),
+            role: message.role,
+            content: message.content,
+            //experimental_attachments: message.experimental_attachments
+          }));
+          setInitialMessages((prevMessages) => [...prevMessages, ...history]);
+          console.log("Chat history loaded:", data.history);
+        }
+      } catch (error) {
+        console.error("Access check failed:", error);
+        alert("Failed to verify chat access");
       }
     };
-    if (prompt) {
-      append({ role: "user", content: prompt });
-    } else if (prompt === "") {
+
+    if (user) {
       checkAccess();
     }
-  }, []);
+  }, [params.id, user]); // Only run when user or chat ID changes
+
+  // Second useEffect for prompt handling
+  useEffect(() => {
+    if (prompt) {
+      append({ role: "user", content: prompt });
+    }
+  }, [prompt, append]); // Only run when prompt changes
 
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
@@ -140,7 +155,6 @@ export default function Chat() {
       <form
         className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl space-y-2"
         onSubmit={(event) => {
-          console.log(event);
           handleSubmit(event, {
             experimental_attachments: files,
           });
