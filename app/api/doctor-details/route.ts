@@ -6,6 +6,8 @@ const pool = new Pool({
 
 export async function GET(req: Request) {
   try {
+    const body = await req.json();
+    const { userId } = body;
     const client = await pool.connect();
     const result = await client.query(
       `SELECT docid, name, email, phone, aos 

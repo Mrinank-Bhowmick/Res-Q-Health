@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   // console.log("UserID:", userID);
 
   const result = streamText({
-    model: google("gemini-1.5-pro-latest"),
+    model: google("gemini-1.5-pro-latest", {}),
     system: `You are a knowledgeable and empathetic health assistant. 
     Respond clearly in 10-100 words, but you may extend it to 200 words including points if detailed answer is needed, focusing on essentials and avoiding unnecessary details.
     You have access to some tools like addInformation, getInformation, isHarmful to answer.`,
@@ -93,11 +93,15 @@ export async function POST(req: Request) {
         },
       }),
       getInformation: tool({
-        description: `get information from knowledge base to answer questions.`,
+        description: `Retrieve information from the health chatbot's knowledge base to answer user questions. 
+          Use this tool to provide accurate and relevant responses based on the stored knowledge base.`,
         parameters: z.object({
           question: z.string().describe("the users question"),
         }),
-        execute: async ({ question }) => findRelevantContent(question),
+        execute: async ({ question }) => {
+          console.log("Getting information from knowledge base...");
+          findRelevantContent(question);
+        },
       }),
     },
     async onFinish({ text }) {
