@@ -49,12 +49,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div
-        className={`fixed flex flex-col justify-between md:relative top-0 left-0 h-full bg-teal-600 text-white w-72 p-6 transition-transform duration-300 ease-in-out ${
+        className={` min-h-screen   overflow-y-scroll fixed flex flex-col justify-between md:relative top-0 left-0 h-full bg-teal-600 text-white w-72 p-6 transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
       >
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between z-10">
             <h2
               className="text-2xl font-bold cursor-pointer"
               onClick={() => router.push("/")}
@@ -99,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </nav>
           )}
         </div>
-        <div className="bg-teal-700 px-4 py-3 flex items-center gap-3 rounded-lg">
+        <div className="z-50 bg-teal-700 px-4 py-3 flex items-center gap-3 rounded-lg">
           <UserButton />
           {user.user?.username}
         </div>
