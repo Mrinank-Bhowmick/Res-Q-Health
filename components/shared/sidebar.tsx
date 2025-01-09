@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div
-        className={`fixed flex flex-col justify-between md:relative top-0 left-0 h-full bg-teal-600 text-white w-64 p-6 transition-transform duration-300 ease-in-out ${
+        className={`fixed flex flex-col justify-between md:relative top-0 left-0 h-full bg-teal-600 text-white w-72 p-6 transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
       >
@@ -77,25 +77,27 @@ const Sidebar: React.FC<SidebarProps> = ({
               </Link>
             ))}
           </nav>
-          <nav className="space-y-4">
-            <h3 className="text-lg font-bold">Chat History</h3>
-            {historyIDs ? (
-              historyIDs.map((item, index) => (
-                <Link
-                  key={index}
-                  href={`/chat/c/${item.chatID}`}
-                  className="block py-2.5 px-4 rounded hover:bg-teal-500 transition"
-                >
-                  {item.chatID.slice(0, 10) + "..."}
-                </Link>
-              ))
-            ) : (
-              <div className="animate-pulse flex flex-col space-y-4">
-                <div className="h-10 bg-teal-500/50 rounded w-3/4"></div>
-                <div className="h-10 bg-teal-500/50 rounded w-3/4"></div>
-              </div>
-            )}
-          </nav>
+          {historyIDs && (
+            <nav className="space-y-4">
+              <h3 className="text-lg font-bold">Chat History</h3>
+              {historyIDs.length > 0 ? (
+                historyIDs.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={`/chat/c/${item.chatID}`}
+                    className="block py-2.5 px-4 rounded hover:bg-teal-500 transition"
+                  >
+                    {item.chatID.slice(0, 10) + "..."}
+                  </Link>
+                ))
+              ) : (
+                <div className="animate-pulse flex flex-col space-y-4">
+                  <div className="h-10 bg-teal-500/50 rounded w-3/4"></div>
+                  <div className="h-10 bg-teal-500/50 rounded w-3/4"></div>
+                </div>
+              )}
+            </nav>
+          )}
         </div>
         <div className="bg-teal-700 px-4 py-3 flex items-center gap-3 rounded-lg">
           <UserButton />
