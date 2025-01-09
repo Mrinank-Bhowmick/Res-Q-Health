@@ -6,7 +6,14 @@ import { useUser } from "@clerk/nextjs";
 
 export default function Portal() {
   const [patientDetails, setPatientDetails] = useState<any[]>([]);
+  const [docid, setDocid] = useState<string>("");
   const { user } = useUser();
+
+  useEffect(() => {
+    if (user) {
+      setDocid(user.id);
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchPatientDetails = async () => {
@@ -30,14 +37,14 @@ export default function Portal() {
     }
   }, [user]);
 
-  const handleAccept = async (pid: string) => {
+  const handleAccept = async (pid: string, docid: string) => {
     try {
       await fetch(`/api/accept`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ pid }),
+        body: JSON.stringify({ pid, docid }),
       });
       setPatientDetails((prevDetails) =>
         prevDetails.map((patient) =>
@@ -87,7 +94,7 @@ export default function Portal() {
                     <div className="mt-4 flex space-x-4">
                       <button
                         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                        onClick={() => handleAccept(patient.pid)}
+                        onClick={() => handleAccept(patient.pid, docid)}
                         disabled={patient.busy}
                       >
                         Accept

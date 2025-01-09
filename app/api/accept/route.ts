@@ -1,5 +1,4 @@
 import { Pool } from "pg";
-import { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse } from "next/server";
 
 const pool = new Pool({
@@ -8,13 +7,14 @@ const pool = new Pool({
 
 export async function PUT(req: Request, res: Response) {
   const body = await req.json();
-  const { pid } = body;
+  const { pid, docid } = body;
 
   try {
     const client = await pool.connect();
-    await client.query("UPDATE public.patient SET busy = true WHERE pid = $1", [
-      pid,
-    ]);
+    await client.query(
+      "UPDATE public.patient SET busy = true, doctor_appointed = $2 WHERE pid = $1",
+      [pid, docid]
+    );
     client.release();
     return NextResponse.json({ message: "Patient accepted" });
   } catch (err) {

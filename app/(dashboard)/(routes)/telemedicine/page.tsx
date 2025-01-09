@@ -49,8 +49,9 @@ export default function Telemedicine() {
               <div>
                 <h2 className="text-xl font-bold">Doctor Details</h2>
                 <p>Name: {doctorDetails.name}</p>
-                <p>Specialization: {doctorDetails.specialization}</p>
-                <p>Contact: {doctorDetails.contact}</p>
+                <p>Email: {doctorDetails.email}</p>
+                <p>Phone: {doctorDetails.phone}</p>
+                <p>Area of Specialization: {doctorDetails.aos}</p>
               </div>
             ) : (
               <div>Fetching doctor details...</div>
