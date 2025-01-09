@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Html5Qrcode } from "html5-qrcode";
 import { ChatContext } from "@/context/ChatContext";
 import { useParams } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { sidebarItems } from "@/lib/items/sidebarItems";
 import Sidebar from "@/components/shared/sidebar";
 
@@ -193,10 +192,11 @@ export default function ChatHistory({User}:ChatClientProps) {
       sidebarItems={sidebarItems}
       historyIDs={historyIDs}
     />
-    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+    <div className="flex flex-col w-full max-w-md mx-auto relative">
+    <div className="flex-1 overflow-y-auto py-6 px-4 pb-36">
       {messages.length > 0 ? (
         messages.map((m) => (
-          <div key={m.id} className="whitespace-pre-wrap">
+          <div key={m.id} className="whitespace-pre-wrap mb-4">
             {m.role === "user" ? (
               <span className="font-bold text-blue-500">User:</span>
             ) : (
@@ -224,9 +224,9 @@ export default function ChatHistory({User}:ChatClientProps) {
       ) : (
         <div>Loading chats...</div>
       )}
-
+</div>
       <form
-        className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl space-y-2"
+ className="absolute bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200"
         onSubmit={(event) => {
           handleSubmit(event, {
             experimental_attachments: files,
