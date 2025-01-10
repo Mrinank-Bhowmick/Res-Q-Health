@@ -30,8 +30,5 @@ jobs:
       - name: Generate Drizzle Client
         run: npm run db:generate
 
-      - name: Run Database Migrations
-        run: npm run db:migrate
-
       - name: Run Build
         run: npm run build
