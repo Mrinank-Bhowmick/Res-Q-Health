@@ -1,4 +1,4 @@
-name: Build, Lint on PR and Push
+name: Build, Lint on PR and Push 
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ jobs:
 
       - name: Set Environment Variables
         run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
-        
+
       - name: Install Dependencies
         run: npm install
       
